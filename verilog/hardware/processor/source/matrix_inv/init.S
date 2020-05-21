@@ -5,7 +5,5 @@ _start:
 
 init:
 	nop
-	li		sp,2048
-	j			main
-
-
+	li		sp, 9216 	# 8192 (== 0x2000) for the code section plus another 1k for the data section
+	j		main

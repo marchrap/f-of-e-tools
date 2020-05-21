@@ -16,7 +16,7 @@ test:
 	yosys -q ../../../yscripts/$(DESIGN)_test.ys
 	nextpnr-ice40 --up5k --package uwg30 --json $(DESIGN).json --pcf pcf/$(DESIGN).pcf --asc $(DESIGN).asc --pack-only -l pnr.txt -q >/dev/null 2>&1 
 
-resource.log: $(TESTS)
+resources: $(TESTS)
 
 $(TESTS):
 	@printf "\033[0;32mEvaluating $(shell basename $@)\n\033[0m"
