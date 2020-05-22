@@ -77,7 +77,7 @@ void inverse(int matrix[size][size], int det) {
 	for(int i=0; i < size; i++) {
 		for(int j=0; j < size; j++) {
 			mnr(matrix, intermidiate, i, j, size);
-			inv[j][i] = (float)sign * (float)determinant(intermidiate, size-1) / (float)det;
+			inv[j][i] = sign * determinant(intermidiate, size-1);
 			sign *= -1;
 		}
 	}
