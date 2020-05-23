@@ -75,6 +75,41 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
 		Branch_Enable = 1'b0;
 	end
 
+
+	 //instantiate sb_mac16 'inside' the ALU as a combinational logic
+        //circuit with inputs A, B and AddSub (0 for Add, 1 for Sub) 
+        //and output OutputWire, which is connected to ALUOut if Add or Sub is
+        //called
+        SB_MAC16 i_sbmac16 (
+                //port interfaces
+
+                //disable clock by connecting clock enable (CE) to 0
+                .CE(1'b0),
+
+                //split up 32 bit input numbers A and B into 16 bit segments, and map to A,B,C,D in the DSP
+                .A(B[31:16]),
+                .B(B[15:0]),
+                .C(A[31:16]),
+                .D(A[15:0]),
+
+
+                //32 bit output wire from DSP to connect to ALU output
+                .O(O),
+
+                //add-subtract control input to top and bottom accumulators
+                .ADDSUBTOP(AddSub),
+                .ADDSUBBOT(AddSub)
+        );
+
+        //parameters to configure the SV_MAC16 block as an adder/subtractor (most take default
+        //values)
+        defparam i_sbmac16.TOPADDSUB_UPPERINPUT = 1'b1; //set upper input of top adder/subtractor to input C (upper half of ALU input A)
+        defparam i_sbmac16.TOPADDSUB_CARRYSELECT = 2'b10;  //set carry to cascade ACCUMOUT from lower adder/subtractor
+        defparam i_sbmac16.BOTADDSUB_UPPERINPUT = 1'b1; //set upper input of bottom adder/subtractor to input D (lower half of ALU input A)
+        defparam i_sbmac16.A_SIGNED = 1'b0;     //input A is unsigned
+        defparam i_sbmac16.B_SIGNED = 1'b0;     //input B is unsigned
+	
+	
 	always @(ALUctl, A, B) begin
 		case (ALUctl[3:0])
 			/*
@@ -90,12 +125,16 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
 			/*
 			 *	ADD (the fields also match AUIPC, all loads, all stores, and ADDI)
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_ADD:	ALUOut = A + B;
+			//`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_ADD:	ALUOut = A + B;
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_ADD: ALUOut = O;  //when instruction is ADD, connect to DSP output
+
 
 			/*
 			 *	SUBTRACT (the fields also matches all branches)
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SUB:	ALUOut = A - B;
+			//`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SUB:	ALUOut = A - B;
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SUB: ALUOut = O;  //when instruction is SUBTRACT, connect to DSP output
+
 
 			/*
 			 *	SLT (the fields also matches all the other SLT variants)
@@ -143,7 +182,9 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
 			default:					ALUOut = 0;
 		endcase
 	end
-
+	
+	assign AddSub = ALUctl[2]; //configure DSP to add or subtract depending on ALUctl, which is the opcode (index 2 is 0 for Add, 1 for Subtract)
+	
 	always @(ALUctl, ALUOut, A, B) begin
 		case (ALUctl[6:4])
 			`kSAIL_MICROARCHITECTURE_ALUCTL_6to4_BEQ:	Branch_Enable = (ALUOut == 0);
