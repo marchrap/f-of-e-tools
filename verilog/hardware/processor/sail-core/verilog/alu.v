@@ -76,10 +76,9 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
 	end
 
 
-	 //instantiate sb_mac16 'inside' the ALU as a combinational logic
+	//instantiate sb_mac16 'inside' the ALU as a combinational logic
         //circuit with inputs A, B and AddSub (0 for Add, 1 for Sub) 
-        //and output OutputWire, which is connected to ALUOut if Add or Sub is
-        //called
+        //and output O, which is connected to ALUOut if Add or Sub is executed
         SB_MAC16 i_sbmac16 (
                 //port interfaces
 
@@ -92,8 +91,7 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
                 .C(A[31:16]),
                 .D(A[15:0]),
 
-
-                //32 bit output wire from DSP to connect to ALU output
+                //32 bit output from DSP to connect to ALU output
                 .O(O),
 
                 //add-subtract control input to top and bottom accumulators
@@ -101,14 +99,11 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
                 .ADDSUBBOT(AddSub)
         );
 
-        //parameters to configure the SV_MAC16 block as an adder/subtractor (most take default
-        //values)
-        defparam i_sbmac16.TOPADDSUB_UPPERINPUT = 1'b1; //set upper input of top adder/subtractor to input C (upper half of ALU input A)
+        //configure the SV_MAC16 block as an adder/subtractor (most take default values)
+        defparam i_sbmac16.TOPADDSUB_UPPERINPUT = 1'b1;    //set upper input of top adder/subtractor to input C (upper half of ALU input A)
         defparam i_sbmac16.TOPADDSUB_CARRYSELECT = 2'b10;  //set carry to cascade ACCUMOUT from lower adder/subtractor
-        defparam i_sbmac16.BOTADDSUB_UPPERINPUT = 1'b1; //set upper input of bottom adder/subtractor to input D (lower half of ALU input A)
-        defparam i_sbmac16.A_SIGNED = 1'b0;     //input A is unsigned
-        defparam i_sbmac16.B_SIGNED = 1'b0;     //input B is unsigned
-	
+        defparam i_sbmac16.BOTADDSUB_UPPERINPUT = 1'b1;    //set upper input of bottom adder/subtractor to input D (lower half of ALU input A)
+  	
 	
 	always @(ALUctl, A, B) begin
 		case (ALUctl[3:0])
