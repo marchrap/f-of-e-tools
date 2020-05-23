@@ -16,7 +16,7 @@ test:
 	yosys -q ../../../yscripts/$(DESIGN)_test.ys
 	nextpnr-ice40 --up5k --package uwg30 --json $(DESIGN).json --pcf pcf/$(DESIGN).pcf --asc $(DESIGN).asc --pack-only -l pnr.txt -q >/dev/null 2>&1 
 
-resources: $(TESTS)
+resources: clean $(TESTS)
 
 $(TESTS):
 	@printf "\033[0;32mEvaluating $(shell basename $@)\n\033[0m"
@@ -25,12 +25,12 @@ $(TESTS):
 	make test
 	printf '$(shell basename $@)\n-----------------------------------\n' >> resource.log  
 	cut -c 7- pnr.txt >> resource.log
-	awk -v RS="" '{a[NR]=$$0} END {print a[NR]}' stat.txt | cut -c 4- >> resource.log
+	awk -v RS="" '{a[NR]=$$0} END {print "         Instruction memory \n" a[NR-15] "\n\n" "         Total \n" a[NR]}' stat.txt | cut -c 4- >> resource.log
 	rm stat.txt pnr.txt
 	printf '\n' >> resource.log
 	@printf "\n"
 
 clean:
-	rm -f *.json *.blif *.asc *.bin *.log
+	rm -f *.json *.blif *.asc *.bin resource.log
 
 .PHONY: $(TESTS)
