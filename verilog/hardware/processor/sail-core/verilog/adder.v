@@ -46,9 +46,33 @@
 
 
 module adder(input1, input2, out);
-	input [31:0]	input1;
-	input [31:0]	input2;
-	output [31:0]	out;
+	input [31:0]		input1;
+	input [31:0]		input2;
+	output [31:0]	        out;
 
-	assign		out = input1 + input2;
+	// Initiate the SB_MAC16 primitive to instantiate the DSP module with
+	// standard input/output definitions making it a combinational
+	// circuit.
+	SB_MAC16 add(
+		// Split the inputs in half so that the lower parts are added
+		// together and upper as well. Then use the carry to conduct
+		// the whole operations. 
+		.A(input1[31:16]),
+		.B(input1[15:0]),
+		.C(input2[31:16]),
+		.D(input2[15:0]),
+
+		// Turn off the clock so that the circuit is comibnational. 
+		.CE(1'b0),
+
+		// Connect the output.
+		.O(out)
+	);
+
+	// Make the adders add the uppoer and lower parts of numbers.
+	defparam add.TOPADDSUB_UPPERINPUT = 1'b1;
+        defparam add.BOTADDSUB_UPPERINPUT = 1'b1;
+
+	// Pass the carry from the lower to the upper summation.
+	defparam add.TOPADDSUB_CARRYSELECT = 2'b10;	
 endmodule
