@@ -60,7 +60,8 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
 	input [31:0]		B;
 	output reg [31:0]	ALUOut;
 	output reg		Branch_Enable;
-
+	wire [31:0]		O;
+	wire 			AddSub;
 	/*
 	 *	This uses Yosys's support for nonzero initial values:
 	 *
@@ -105,7 +106,7 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
         defparam i_sbmac16.BOTADDSUB_UPPERINPUT = 1'b1;    //set upper input of bottom adder/subtractor to input D (lower half of ALU input A)
   	
 	
-	always @(ALUctl, A, B) begin
+	always @(ALUctl, A, B, O) begin
 		case (ALUctl[3:0])
 			/*
 			 *	AND (the fields also match ANDI and LUI)
