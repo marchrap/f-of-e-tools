@@ -1,14 +1,18 @@
 #include <stdlib.h>
 
-const int size = 7;
+const int size = 9;
 int determinant(int matrix[size][size], int k);
 void mnr(int matrix[size][size], int intermidiate[size][size], int row, int column, int k);
 void inverse(int matrix[size][size], int det);
+int init = 0;
 
 int
 main(void)
 {
-		srand(0);	
+	volatile unsigned int *         debugLEDs = (unsigned int *)0x2000;
+	*debugLEDs = 0xFF;
+	while(1) {
+		srand(init);	
 		int matrixA[size][size];	
 		
 		for(int i=0; i<size; i++){
@@ -21,8 +25,9 @@ main(void)
 		if (abs(det) > 1) {
 			inverse(matrixA, det);
 		}
-		
-	
+		init++;
+		*debugLEDs = *debugLEDs ^ 0xFF;
+	}
 	return 0;
 }
 
@@ -75,7 +80,7 @@ void inverse(int matrix[size][size], int det) {
 	for(int i=0; i < size; i++) {
 		for(int j=0; j < size; j++) {
 			mnr(matrix, intermidiate, i, j, size);
-			inv[j][i] = (float)sign * (float)determinant(intermidiate, size-1) / (float)det;
+			inv[j][i] = sign * determinant(intermidiate, size-1);
 			sign *= -1;
 		}
 	}
