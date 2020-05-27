@@ -1,5 +1,5 @@
 /*
-	Authored 2018-2019, Ryan Voo.
+	Authored 2020, Marcin Chrapek..
 
 	All rights reserved.
 	Redistribution and use in source and binary forms, with or without
@@ -35,60 +35,63 @@
 */
 
 
+
 /*
- *	top.v
+ *	Description:
  *
- *	Top level entity, linking cpu with data and instruction memory.
+ *		This testbench implements the top module of the CPU.
  */
 
-module top (led, clk);
-	output [7:0]	led;
-	input		clk;
 
-	wire		clk_proc;
-	wire		data_clk_stall;
+
+module top_tb;
+	wire [7:0]	led;		//  The led top output
+	reg		clk = 0; 	//  The clk of the top module
+
+	integer		i;
+	integer		number_of_cycles = 0;
+	integer		number_of_instructions = 0;
+
+	top top_module(
+		.led(led), 
+		.clk(clk)
+	);
 	
-	/*
-	 *	Memory interface
-	 */
-	wire[31:0]	inst_in;
-	wire[31:0]	inst_out;
-	wire[31:0]	data_out;
-	wire[31:0]	data_addr;
-	wire[31:0]	data_WrData;
-	wire		data_memwrite;
-	wire		data_memread;
-	wire[3:0]	data_sign_mask;
+	always 
+		#0.5 clk = ~clk;
 
+	always @(posedge clk)
+		number_of_cycles += 1;
 
-	cpu processor(
-		.clk(clk_proc),
-		.inst_mem_in(inst_in),
-		.inst_mem_out(inst_out),
-		.data_mem_out(data_out),
-		.data_mem_addr(data_addr),
-		.data_mem_WrData(data_WrData),
-		.data_mem_memwrite(data_memwrite),
-		.data_mem_memread(data_memread),
-		.data_mem_sign_mask(data_sign_mask)
-	);
+	always @(top_module.inst_out) begin
+		//if (top_module.inst_out == 32'b0 && top_module.inst_in == 32'b0) begin
+		//	$display("Number of instructions: %0d", number_of_instructions);
+		//	$display("Number of clock cycles: %0d", number_of_cycles);
+		//	$finish;
+		//end
+			
+		$display("%h, %b", top_module.inst_out, top_module.inst_out != 32'b0);
+		number_of_instructions += 1;
+	end
 
-	instruction_memory inst_mem( 
-		.addr(inst_in), 
-		.out(inst_out)
-	);
+	initial begin
+		$dumpfile ("top_tb.vcd");
+		$dumpvars;
+		repeat (100000) @(posedge clk);
+		//for (i = 0; i < 50; i = i + 1) begin
+		//	      $display ("Memory location %0d: %3h", i, top_module.data_mem_inst.data_block[i]);
+		//end
 
-	data_mem data_mem_inst(
-			.clk(clk),
-			.addr(data_addr),
-			.write_data(data_WrData),
-			.memwrite(data_memwrite), 
-			.memread(data_memread), 
-			.read_data(data_out),
-			.sign_mask(data_sign_mask),
-			.led(led),
-			.clk_stall(data_clk_stall)
-		);
+		$display("Number of instructions: %0d", number_of_instructions);
+		$display("Number of clock cycles: %0d", number_of_cycles);
+		$finish;
+	end
 
-	assign clk_proc = (data_clk_stall) ? 1'b1 : clk;
+//	initial begin
+//		for (i = 0; i < 10; i = i + 1) begin
+//			      $display ("Memory location %0d: %3h", i, top_module.inst_mem.instruction_memory[i], );
+//		end
+//		$display("Clk cycle");
+//		$monitor("Memory location %0d: %3h", 0, top_module.data_mem_inst.data_block[0]);
+//	end
 endmodule
