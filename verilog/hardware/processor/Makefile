@@ -31,11 +31,11 @@ $(TESTS):
 	printf '\n' >> $@.log
 	@printf "\n"
 
-resource: 
-	cat *.log > resources.log
-	find . -maxdepth 1 -name '*.log' ! -name 'resources.log' -type f -delete
+resources: 
+	cat *.log > resources.txt
+	rm *.log
 
 clean:
-	rm -f *.json *.blif *.asc *.bin resource.log
+	rm -f *.json *.blif *.asc *.bin *.log
 
 .PHONY: $(TESTS)
