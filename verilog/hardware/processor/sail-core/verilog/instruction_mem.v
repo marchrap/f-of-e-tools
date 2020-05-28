@@ -74,5 +74,5 @@ module instruction_memory(addr, out, clk);
 		 */
 		$readmemh("verilog/program.hex",instruction_memory);
 	end
-	always @(posedge clk) out <= instruction_memory[addr >> 2];
+	always @(negedge clk) out <= instruction_memory[addr >> 2];
 endmodule

@@ -87,7 +87,7 @@ module top (led);
 	);
 
 	instruction_memory inst_mem( 
-		.clk(clk),
+		.clk(clk_proc),
 		.addr(inst_in), 
 		.out(inst_out)
 	);
