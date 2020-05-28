@@ -60,6 +60,16 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
 	input [31:0]		B;
 	output reg [31:0]	ALUOut;
 	output reg		Branch_Enable;
+	
+	wire [31:0]		Logic_connect;
+	reg [1:0]		Op;
+
+	logic_unit lu(
+		.result(Logic_connect),
+		.A(A),
+		.B(B),
+		.operation(Op)
+	);
 
 	/*
 	 *	This uses Yosys's support for nonzero initial values:
@@ -80,67 +90,98 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
 			/*
 			 *	AND (the fields also match ANDI and LUI)
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_AND:	ALUOut = A & B;
-
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_AND:	begin
+				Op = 2'b11;
+				ALUOut = Logic_connect;
+			end
 			/*
-			 *	OR (the fields also match ORI)
+			 *	OR (the fields also match ORI) and CSRRS (both
+			 *	implement an OR gate);
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_OR:	ALUOut = A | B;
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_OR, `kSAIL_MICROARCHITECTURE_ALUCTL_3to0_CSRRS:	begin
+				Op = 2'b01;
+				ALUOut = Logic_connect;
+			end
 
 			/*
 			 *	ADD (the fields also match AUIPC, all loads, all stores, and ADDI)
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_ADD:	ALUOut = A + B;
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_ADD:	begin
+				Op = 2'bxx;
+				ALUOut = A + B;
+			end
 
 			/*
 			 *	SUBTRACT (the fields also matches all branches)
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SUB:	ALUOut = A - B;
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SUB:	begin
+				Op = 2'bxx;
+				ALUOut = A - B;
+			end
 
 			/*
 			 *	SLT (the fields also matches all the other SLT variants)
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SLT:	ALUOut = $signed(A) < $signed(B) ? 32'b1 : 32'b0;
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SLT:	begin
+				Op = 2'bxx;
+				ALUOut = $signed(A) < $signed(B) ? 32'b1 : 32'b0;
+			end
 
 			/*
 			 *	SRL (the fields also matches the other SRL variants)
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SRL:	ALUOut = A >> B[4:0];
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SRL:	begin
+				Op = 2'bxx;
+				ALUOut = A >> B[4:0];
+			end
 
 			/*
 			 *	SRA (the fields also matches the other SRA variants)
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SRA:	ALUOut = A >>> B[4:0];
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SRA:	begin
+				Op = 2'bxx;
+				ALUOut = A >>> B[4:0];
+			end
 
 			/*
 			 *	SLL (the fields also match the other SLL variants)
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SLL:	ALUOut = A << B[4:0];
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_SLL:	begin
+				Op = 2'bxx;
+				ALUOut = A << B[4:0];
+			end
 
 			/*
 			 *	XOR (the fields also match other XOR variants)
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_XOR:	ALUOut = A ^ B;
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_XOR:	begin	
+				Op = 2'b00;
+				ALUOut = Logic_connect;
+			end
 
 			/*
 			 *	CSRRW  only
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_CSRRW:	ALUOut = A;
-
-			/*
-			 *	CSRRS only
-			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_CSRRS:	ALUOut = A | B;
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_CSRRW:	begin
+				Op = 2'bxx;
+				ALUOut = A;
+			end
 
 			/*
 			 *	CSRRC only
 			 */
-			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_CSRRC:	ALUOut = (~A) & B;
+			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_CSRRC:	begin
+				Op = 2'b01;
+				ALUOut = Logic_connect;
+			end
 
 			/*
 			 *	Should never happen.
 			 */
-			default:					ALUOut = 0;
+			default:					begin
+				Op = 2'bxx;				
+				ALUOut = 0;
+			end
 		endcase
 	end
 
