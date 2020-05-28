@@ -58,14 +58,14 @@ module top_tb;
 		.clk(clk)
 	);
 	
-	always begin
+	always 
 		#0.5 clk = ~clk;
-		if (number_of_cycles % 1000 == 0) 
-			$display("%d", number_of_cycles);	
-	end
 
-	always @(posedge clk)
+	always @(posedge clk) begin
 		number_of_cycles += 1;
+		if (number_of_cycles % 100000 == 0) 
+			$display("%d", number_of_cycles);
+	end	
 
 	always @(top_module.inst_out) begin
 		//if (top_module.inst_out == 32'b0 && top_module.inst_in == 32'b0) begin
@@ -74,14 +74,14 @@ module top_tb;
 		//	$finish;
 		//end
 			
-		//$display("%h, %b", top_module.inst_out, top_module.inst_out != 32'b0);
+		$display("%h, %b", top_module.inst_out, top_module.inst_out != 32'b0);
 		number_of_instructions += 1;
 		last_cycle_seen = number_of_cycles;
 	end
 
 	initial begin
-		$dumpfile ("top_tb.vcd");
-		$dumpvars;
+		//$dumpfile ("top_tb.vcd");
+		//$dumpvars;
 		repeat (50000000) @(posedge clk);
 		//for (i = 0; i < 50; i = i + 1) begin
 		//	      $display ("Memory location %0d: %3h", i, top_module.data_mem_inst.data_block[i]);
