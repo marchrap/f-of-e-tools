@@ -46,7 +46,7 @@ module top (led);
 
 	wire		clk_proc;
 	wire		data_clk_stall;
-	
+	wire		clkpll;
 	wire		clk;
 	reg		ENCLKHF		= 1'b1;	// Plock enable
 	reg		CLKHF_POWERUP	= 1'b1;	// Power up the HFOSC circuit
@@ -58,8 +58,21 @@ module top (led);
 	SB_HFOSC #(.CLKHF_DIV("0b11")) OSCInst0 (
 		.CLKHFEN(ENCLKHF),
 		.CLKHFPU(CLKHF_POWERUP),
-		.CLKHF(clk)
+		.CLKHF(clkpll)
 	);
+	SB_PLL40_CORE #(
+		.FEEDBACK_PATH("SIMPLE"),
+		.DIVR(4'b0010),		// DIVR =  2
+		.DIVF(7'b0110011),	// DIVF = 51
+		.DIVQ(3'b101),		// DIVQ =  5
+		.FILTER_RANGE(3'b001)	// FILTER_RANGE = 1
+	) uut (
+		.LOCK(locked),
+		.RESETB(1'b1),
+		.BYPASS(1'b0),
+		.REFERENCECLK(clkpll),
+		.PLLOUTCORE(clk)
+		);
 
 	/*
 	 *	Memory interface
