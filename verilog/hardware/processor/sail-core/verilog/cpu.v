@@ -51,7 +51,7 @@ module cpu(
 			data_mem_WrData,
 			data_mem_memwrite,
 			data_mem_memread,
-			data_mem_sign_mask
+			data_mem_sign_mask,
 		);
 	/*
 	 *	Input Clock
@@ -507,7 +507,7 @@ module cpu(
 	assign inst_mux_sel = pcsrc | predict | mistake_trigger | Fence_signal;
 
 	//Instruction Memory Connections
-	assign inst_mem_in = pc_out;
+	assign inst_mem_in = pc_in;
 
 	//Data Memory Connections
 	assign data_mem_addr = lui_result;
