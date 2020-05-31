@@ -46,6 +46,7 @@ module top (led);
 
 	wire		clk_proc;
 	wire		data_clk_stall;
+	wire		clkosc;
 	wire		clkpll;
 	wire		clk;
 	reg		ENCLKHF		= 1'b1;	// Plock enable
@@ -55,10 +56,10 @@ module top (led);
 	/*
 	 *	Use the iCE40's hard primitive for the clock source.
 	 */
-	SB_HFOSC #(.CLKHF_DIV("0b11")) OSCInst0 (
+	SB_HFOSC #(.CLKHF_DIV("0b00")) OSCInst0 (
 		.CLKHFEN(ENCLKHF),
 		.CLKHFPU(CLKHF_POWERUP),
-		.CLKHF(clkpll)
+		.CLKHF(clkosc)
 	);
 	SB_PLL40_CORE #(
 		.FEEDBACK_PATH("SIMPLE"),
@@ -70,9 +71,17 @@ module top (led);
 		.LOCK(locked),
 		.RESETB(1'b1),
 		.BYPASS(1'b0),
-		.REFERENCECLK(clkpll),
-		.PLLOUTCORE(clk)
+		.REFERENCECLK(clkosc),
+		.PLLOUTCORE(clkpll)
 		);
+
+	always @(posedge clkpll)
+	begin
+		if (~rst)
+     			clk <= 1'b0;
+		else
+     			clk <= ~clk;	
+	end
 
 	/*
 	 *	Memory interface
@@ -116,5 +125,6 @@ module top (led);
 			.clk_stall(data_clk_stall)
 		);
 
+	assign RegB_AddrFwdFlush_mux_out = CSRR_signal ? 32'b0 : {27'b0, if_id_out[56:52]};;
 	assign clk_proc = (data_clk_stall) ? 1'b1 : clk;
 endmodule
