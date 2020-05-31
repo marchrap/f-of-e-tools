@@ -41,48 +41,57 @@
  *
  *		This testbench implements the top module of the CPU.
  */
-
+`timescale 1s/1s
 
 
 module top_tb;
 	wire [7:0]	led;		//  The led top output
-	reg		clk = 0; 	//  The clk of the top module
+	wire [31:0]	instructions;
+	reg 		clk;
 
 	integer		i;
 	integer		number_of_cycles = 0;
 	integer		last_cycle_seen = 0;
 	integer		number_of_instructions = 0;
+	integer		last_instruction;
 
 	top top_module(
-		.led(led), 
+		.led(led),
+	       	.instructions(instructions),	
 		.clk(clk)
 	);
-	
-	always 
-		#0.5 clk = ~clk;
+
+	always
+		#0.5 clk = (clk === 1'b0);
 
 	always @(posedge clk) begin
 		number_of_cycles += 1;
-		if (number_of_cycles % 100000 == 0) 
+
+	//	if (last_instruction != instructions) begin
+	//		$display("%h", instructions);
+	//		number_of_instructions += 1;
+	//		last_cycle_seen = number_of_cycles;
+	//	end
+
+		if (number_of_cycles % 1000 == 0) 
 			$display("%d", number_of_cycles);
+	//	
+	//	last_instruction = instructions;
 	end	
 
-	always @(top_module.inst_out) begin
+//	always @(instructions) begin
 		//if (top_module.inst_out == 32'b0 && top_module.inst_in == 32'b0) begin
 		//	$display("Number of instructions: %0d", number_of_instructions);
 		//	$display("Number of clock cycles: %0d", number_of_cycles);
 		//	$finish;
 		//end
 			
-		$display("%h, %b", top_module.inst_out, top_module.inst_out != 32'b0);
-		number_of_instructions += 1;
-		last_cycle_seen = number_of_cycles;
-	end
+//	end
 
 	initial begin
-		//$dumpfile ("top_tb.vcd");
-		//$dumpvars;
-		repeat (50000000) @(posedge clk);
+		$dumpfile ("top_tb.vcd");
+		$dumpvars(2, top_module);
+		repeat (20000) @(posedge clk);
 		//for (i = 0; i < 50; i = i + 1) begin
 		//	      $display ("Memory location %0d: %3h", i, top_module.data_mem_inst.data_block[i]);
 		//end

@@ -41,25 +41,27 @@
  *	Top level entity, linking cpu with data and instruction memory.
  */
 
-module top (led, clk);
+module top (led, clk, instructions);
 	output [7:0]	led;
-	input		clk;
+	output [31:0]	instructions;
 
 	wire		clk_proc;
 	wire		data_clk_stall;
-	
+		
+	input		clk;
+
 	/*
 	 *	Memory interface
 	 */
-	wire[31:0]	inst_in;
-	wire[31:0]	inst_out;
-	wire[31:0]	data_out;
-	wire[31:0]	data_addr;
-	wire[31:0]	data_WrData;
-	wire		data_memwrite;
-	wire		data_memread;
-	wire[3:0]	data_sign_mask;
 
+	wire[31:0]		inst_in;
+	wire[31:0]		inst_out;
+	wire[31:0]		data_out;
+	wire[31:0]		data_addr;
+	wire[31:0]		data_WrData;
+	wire			data_memwrite;
+	wire			data_memread;
+	wire[3:0]		data_sign_mask;
 
 	cpu processor(
 		.clk(clk_proc),
@@ -70,11 +72,12 @@ module top (led, clk);
 		.data_mem_WrData(data_WrData),
 		.data_mem_memwrite(data_memwrite),
 		.data_mem_memread(data_memread),
-		.data_mem_sign_mask(data_sign_mask)
+		.data_mem_sign_mask(data_sign_mask),
 	);
 
 	instruction_memory inst_mem( 
-		.addr(inst_in), 
+		.addr(inst_in),
+	       	.clk(clk),	
 		.out(inst_out)
 	);
 
@@ -91,4 +94,5 @@ module top (led, clk);
 		);
 
 	assign clk_proc = (data_clk_stall) ? 1'b1 : clk;
+	assign instructions = inst_out;
 endmodule

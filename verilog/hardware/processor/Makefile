@@ -30,6 +30,12 @@ $(TESTS):
 	printf '\n' >> resource.log
 	@printf "\n"
 
+simulation:
+	cp programs/data.hex verilog/
+	cp programs/program.hex verilog/
+	yosys -q ../../../yscripts/$(DESIGN)_sim.ys
+	iverilog -o sim sail-core/simulation/top_tb.v sim.v `yosys-config --datdir/ice40/cells_sim.v`
+
 clean:
 	rm -f *.json *.blif *.asc *.bin *.log
 
