@@ -64,7 +64,7 @@ module top (led);
 	SB_PLL40_CORE #(
 		.FEEDBACK_PATH("SIMPLE"),
 		.DIVR(4'b0010),		// DIVR =  2
-		.DIVF(7'b0110011),	// DIVF = 51
+		.DIVF(7'b0110001),	// DIVF = 49
 		.DIVQ(3'b101),		// DIVQ =  5
 		.FILTER_RANGE(3'b001)	// FILTER_RANGE = 1
 	) uut (
@@ -75,11 +75,11 @@ module top (led);
 		.PLLOUTCORE(clkpll)
 		);
 
+	initial begin
+		clk = 1'b0;
+	end
 	always @(posedge clkpll)
 	begin
-		if (~rst)
-     			clk <= 1'b0;
-		else
      			clk <= ~clk;	
 	end
 
@@ -125,6 +125,5 @@ module top (led);
 			.clk_stall(data_clk_stall)
 		);
 
-	assign RegB_AddrFwdFlush_mux_out = CSRR_signal ? 32'b0 : {27'b0, if_id_out[56:52]};;
 	assign clk_proc = (data_clk_stall) ? 1'b1 : clk;
 endmodule
