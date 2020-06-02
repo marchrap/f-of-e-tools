@@ -171,7 +171,7 @@ module alu(ALUctl, A, B, ALUOut, Branch_Enable);
 			 *	CSRRC only
 			 */
 			`kSAIL_MICROARCHITECTURE_ALUCTL_3to0_CSRRC:	begin
-				Op = 2'b01;
+				Op = 2'b10;
 				ALUOut = Logic_connect;
 			end
 
