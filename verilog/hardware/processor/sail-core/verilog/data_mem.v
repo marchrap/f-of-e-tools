@@ -108,12 +108,10 @@ module data_mem (clk, addr, write_data, memwrite, memread, sign_mask, read_data,
 	/*
 	 *	wire assignments
 	 */
-	wire [9:0]		addr_buf_block_addr;
 	wire [1:0]		addr_buf_byte_offset;
 	
 	wire [31:0]		replacement_word;
 
-	assign			addr_buf_block_addr	= addr_buf[11:2];
 	assign			addr_buf_byte_offset	= addr_buf[1:0];
 
 	/*
@@ -246,6 +244,7 @@ module data_mem (clk, addr, write_data, memwrite, memread, sign_mask, read_data,
 				write_data_buffer <= write_data;
 				addr_buf <= addr;
 				sign_mask_buf <= sign_mask;
+				word_buf <= data_block[addr[11:2] - 32'h1000];
 				
 				if(memwrite==1'b1 || memread==1'b1) begin
 					state <= READ_BUFFER;
@@ -258,30 +257,21 @@ module data_mem (clk, addr, write_data, memwrite, memread, sign_mask, read_data,
 				 *	Subtract out the size of the instruction memory.
 				 *	(Bad practice: The constant should be a `define).
 				 */
-				word_buf <= data_block[addr_buf_block_addr - 32'h1000];
 				if(memread_buf==1'b1) begin
-					state <= READ;
+					clk_stall <= 0;
+					read_data <= read_buf;
+					state <= IDLE;
 				end
 				else if(memwrite_buf == 1'b1) begin
-					state <= WRITE;
+					clk_stall <= 0;
+
+					/*
+					 *	Subtract out the size of the instruction memory.
+					 *	(Bad practice: The constant should be a `define).
+					 */
+					data_block[addr[11:2] - 32'h1000] <= replacement_word;
+					state <= IDLE;
 				end
-			end
-
-			READ: begin
-				clk_stall <= 0;
-				read_data <= read_buf;
-				state <= IDLE;
-			end
-
-			WRITE: begin
-				clk_stall <= 0;
-
-				/*
-				 *	Subtract out the size of the instruction memory.
-				 *	(Bad practice: The constant should be a `define).
-				 */
-				data_block[addr_buf_block_addr - 32'h1000] <= replacement_word;
-				state <= IDLE;
 			end
 
 		endcase
