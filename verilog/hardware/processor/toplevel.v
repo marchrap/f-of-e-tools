@@ -63,8 +63,8 @@ module top (led);
 	);
 	SB_PLL40_CORE #(
 		.FEEDBACK_PATH("SIMPLE"),
-		.DIVR(4'b0010),		// DIVR =  2
-		.DIVF(7'b0110001),	// DIVF = 49
+		.DIVR(4'b0001),		// DIVR =  2
+		.DIVF(7'b0100100),	// DIVF = 49
 		.DIVQ(3'b101),		// DIVQ =  5
 		.FILTER_RANGE(3'b001)	// FILTER_RANGE = 1
 	) uut (
