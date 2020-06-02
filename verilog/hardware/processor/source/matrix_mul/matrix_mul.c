@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 int init = 0;
+volatile unsigned int *		debugLEDs = (unsigned int *)0x2000;
 
 int
 main(void)
@@ -9,8 +10,14 @@ main(void)
 	// It is used to evaluate the progress of the improvement of the processor implementation.
 	while(1) {
 		srand(init);	
+		
+		if (init % 2 == 0) {
+			*debugLEDs = 0xFF;
+		} else {
+			*debugLEDs = 0x00;
+		}
 
-		int size = 100;
+		int size = 10;
 
 		int matrixA[size][size];	
 		int matrixB[size][size];
