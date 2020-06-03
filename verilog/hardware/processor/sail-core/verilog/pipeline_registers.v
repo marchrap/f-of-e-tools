@@ -47,6 +47,7 @@ module if_id (clk, data_in, data_out);
 	input			clk;
 	input [63:0]		data_in;
 	output reg[63:0]	data_out;
+	wire [63:0]		data_cur;
 
 	/*
 	 *	This uses Yosys's support for nonzero initial values:
@@ -62,8 +63,10 @@ module if_id (clk, data_in, data_out);
 	end
 
 	always @(posedge clk) begin
-		data_out <= data_in;
+		data_out <= data_cur;
 	end
+
+	assign data_cur = (data_in[31:0] == 32'b0) ? {32'h00000013, 32'b0} : data_in; 
 endmodule
 
 
