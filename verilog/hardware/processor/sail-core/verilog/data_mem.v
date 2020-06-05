@@ -238,17 +238,17 @@ module data_mem (clk, addr, write_data, memwrite, memread, sign_mask, read_data,
 	always @(posedge clk) begin
 		case (state)
 			IDLE: begin
-				clk_stall <= 0;
-				memread_buf <= memread;
-				memwrite_buf <= memwrite;
-				write_data_buffer <= write_data;
-				addr_buf <= addr;
-				sign_mask_buf <= sign_mask;
-				word_buf <= data_block[addr[11:2] - 32'h1000];
+				clk_stall = 0;
+				memread_buf = memread;
+				memwrite_buf = memwrite;
+				write_data_buffer = write_data;
+				addr_buf = addr;
+				sign_mask_buf = sign_mask;
+				word_buf = data_block[addr[11:2] - 32'h1000];
 				
 				if(memwrite==1'b1 || memread==1'b1) begin
-					state <= READ_BUFFER;
-					clk_stall <= 1;
+					state = READ_BUFFER;
+					clk_stall = 1;
 				end
 			end
 
@@ -258,19 +258,19 @@ module data_mem (clk, addr, write_data, memwrite, memread, sign_mask, read_data,
 				 *	(Bad practice: The constant should be a `define).
 				 */
 				if(memread_buf==1'b1) begin
-					clk_stall <= 0;
-					read_data <= read_buf;
-					state <= IDLE;
+					clk_stall = 0;
+					read_data = read_buf;
+					state = IDLE;
 				end
 				else if(memwrite_buf == 1'b1) begin
-					clk_stall <= 0;
+					clk_stall = 0;
 
 					/*
 					 *	Subtract out the size of the instruction memory.
 					 *	(Bad practice: The constant should be a `define).
 					 */
-					data_block[addr[11:2] - 32'h1000] <= replacement_word;
-					state <= IDLE;
+					data_block[addr[11:2] - 32'h1000] = replacement_word;
+					state = IDLE;
 				end
 			end
 
